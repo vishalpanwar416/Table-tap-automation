@@ -1,7 +1,13 @@
 const crypto = require('crypto');
 const CommentEvent = require('../models/CommentEvent');
 const AppConfig = require('../models/AppConfig');
-const { sendDM, checkFollowStatus } = require('../services/instagramService');
+const { 
+  sendDM, 
+  sendInitialButtonDM, 
+  sendNotFollowingButtonsDM, 
+  sendFinalResourceButtonsDM, 
+  checkFollowStatus 
+} = require('../services/instagramService');
 
 // GET /api/webhook
 // Verifies the webhook subscription with Meta
@@ -28,7 +34,7 @@ const verifySignature = (req) => {
   const signature = req.headers['x-hub-signature-256'];
   if (!signature) return false;
   
-  const hmac = crypto.createHmac('sha256', process.env.INSTAGRAM_APP_SECRET || ''); // Usually needs App Secret
+  const hmac = crypto.createHmac('sha256', process.env.INSTAGRAM_APP_SECRET || '');
   hmac.update(req.rawBody);
   const expectedSignature = 'sha256=' + hmac.digest('hex');
   
@@ -49,21 +55,20 @@ const handleWebhookEvent = async (req, res) => {
   console.log('--- WEBHOOK RECEIVED ---');
   console.log(JSON.stringify(body, null, 2));
   
-  // Note: For local development, if INSTAGRAM_APP_SECRET is not set, we bypass signature verification
   if (process.env.INSTAGRAM_APP_SECRET && !verifySignature(req)) {
     console.warn('[Webhook] Signature validation failed (likely Meta Dashboard Test event). Continuing processing...');
   }
   
   if (body.object === 'instagram') {
-    // Acknowledge receipt to Meta quickly (must be within 20 seconds)
+    // Acknowledge receipt to Meta quickly
     res.status(200).send('EVENT_RECEIVED');
 
-    // Process the event asynchronously
     try {
       const config = await AppConfig.findOne();
       if (!config) return;
 
       for (const entry of body.entry) {
+        // --- 1. HANDLE COMMENT WEBHOOKS ---
         if (entry.changes && Array.isArray(entry.changes)) {
           for (const change of entry.changes) {
             if (change.field === 'comments') {
@@ -74,16 +79,14 @@ const handleWebhookEvent = async (req, res) => {
               const fromUser = commentVal.from;
               const mediaId = commentVal.media_id || (commentVal.media && commentVal.media.id);
 
-              // Prevent responding if fromUser is missing
               if (!fromUser || !fromUser.id) continue;
 
-              // Prevent responding to our own comments
+              // Prevent loop for page's own comments
               if (process.env.INSTAGRAM_ACCOUNT_ID && fromUser.id === process.env.INSTAGRAM_ACCOUNT_ID) {
-                console.log('[Webhook] Ignoring comment from page itself to prevent self-trigger loop.');
                 continue;
               }
 
-              // Trigger check
+              // Trigger keyword match check
               let isTriggered = false;
               if (text.includes('example') || text.includes('test')) {
                 isTriggered = true;
@@ -95,35 +98,57 @@ const handleWebhookEvent = async (req, res) => {
               }
 
               if (isTriggered && mediaId) {
-                // Check follow status
-                const isFollowing = await checkFollowStatus(fromUser.id);
-                
-                // Target recipient object: Use comment_id for Instagram Private Reply (bypasses 24-hr messaging window restriction)
                 const targetRecipient = commentVal.id ? { comment_id: commentVal.id } : { id: fromUser.id };
 
-                let status = 'pending';
+                // Step 1: Send initial interactive message with button "Send me the link"
                 try {
-                  if (isFollowing) {
-                    await sendDM(targetRecipient, config.finalMessage);
-                    status = 'completed';
-                  } else {
-                    await sendDM(targetRecipient, config.notFollowingMessage);
-                    status = 'awaiting_follow';
-                  }
+                  await sendInitialButtonDM(targetRecipient);
                 } catch (dmErr) {
-                  console.error(`[Webhook] Failed to send DM to ${fromUser.id}:`, dmErr?.response?.data || dmErr.message);
-                  status = isFollowing ? 'pending' : 'awaiting_follow';
+                  console.error('[Webhook] Initial DM error:', dmErr?.response?.data || dmErr.message);
                 }
 
-                // Store event in DB
+                // Store event in DB as awaiting_follow / pending
                 await CommentEvent.create({
                   instagramUserId: fromUser.id,
                   username: fromUser.username || fromUser.id,
                   commentText: commentVal.text || '',
                   mediaId,
-                  status
+                  status: 'awaiting_follow'
                 });
               }
+            }
+          }
+        }
+
+        // --- 2. HANDLE INTERACTIVE BUTTON CLICK WEBHOOKS (Messaging / Quick Replies / Postbacks) ---
+        if (entry.messaging && Array.isArray(entry.messaging)) {
+          for (const messaging of entry.messaging) {
+            const senderId = messaging.sender && messaging.sender.id;
+            if (!senderId || senderId === process.env.INSTAGRAM_ACCOUNT_ID) continue;
+
+            const postbackPayload = messaging.postback && messaging.postback.payload;
+            const quickReplyPayload = messaging.message && messaging.message.quick_reply && messaging.message.quick_reply.payload;
+            const messageText = (messaging.message && messaging.message.text || '').toLowerCase();
+
+            const payload = postbackPayload || quickReplyPayload || messageText;
+
+            // Scenario A: User clicks "Send me the link"
+            if (payload === 'SEND_LINK_CLICKED' || payload.includes('send me the link')) {
+              const isFollowing = await checkFollowStatus(senderId);
+              if (isFollowing) {
+                await sendFinalResourceButtonsDM(senderId, config.finalMessage);
+                await CommentEvent.updateMany({ instagramUserId: senderId }, { status: 'completed' });
+              } else {
+                // Send "Wait, you're not following yet?" button message
+                await sendNotFollowingButtonsDM(senderId);
+              }
+            }
+
+            // Scenario B: User clicks "I'm following ✓"
+            if (payload === 'IM_FOLLOWING_CLICKED' || payload.includes('following')) {
+              console.log(`[Webhook] User ${senderId} clicked "I'm following ✓". Delivering final resource links...`);
+              await CommentEvent.updateMany({ instagramUserId: senderId }, { status: 'completed' });
+              await sendFinalResourceButtonsDM(senderId, config.finalMessage);
             }
           }
         }
