@@ -32,11 +32,13 @@ const verifyWebhook = (req, res) => {
 
 const handleWebhookEvent = async (req, res) => {
   if (req.body.object !== 'instagram') return res.sendStatus(404);
-  res.status(200).send('EVENT_RECEIVED');
 
   if (process.env.INSTAGRAM_APP_SECRET && !verifySignature(req)) {
     console.warn('[Webhook] Signature validation failed.');
+    return res.sendStatus(403);
   }
+
+  res.status(200).send('EVENT_RECEIVED');
 
   try {
     await automationService.processWebhook(req.body);
