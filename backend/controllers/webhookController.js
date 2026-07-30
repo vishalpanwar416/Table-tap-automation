@@ -98,7 +98,7 @@ const handleWebhookEvent = async (req, res) => {
               }
 
               if (isTriggered && mediaId) {
-                const targetRecipient = commentVal.id ? { comment_id: commentVal.id } : { id: fromUser.id };
+                const targetRecipient = { id: fromUser.id };
 
                 // Step 1: Send initial interactive message with button "Send me the link"
                 try {
