@@ -85,9 +85,9 @@ const handleWebhookEvent = async (req, res) => {
               }
 
               let isTriggered = false;
-              if (text.includes('example') || text.includes('test')) {
+              if (config.triggerMode === 'any') {
                 isTriggered = true;
-              } else if (config.triggerMode === 'any') {
+              } else if (text.includes('example') || text.includes('test')) {
                 isTriggered = true;
               } else if (config.keywords) {
                 const keywordsList = config.keywords.split(',').map(k => k.trim().toLowerCase());
