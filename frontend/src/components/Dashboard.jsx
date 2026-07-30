@@ -7,20 +7,31 @@ const API_URL = 'http://localhost:5001/api/admin';
 const Dashboard = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    fetchEvents();
+    // Initial fetch
+    fetchEvents(true);
+
+    // Real-time polling interval every 3 seconds
+    const interval = setInterval(() => {
+      fetchEvents(false);
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchEvents = async () => {
-    setLoading(true);
+  const fetchEvents = async (showInitialLoading = false) => {
+    if (showInitialLoading) setLoading(true);
+    setIsRefreshing(true);
     try {
       const { data } = await axios.get(`${API_URL}/events`);
       setEvents(data);
     } catch (err) {
       console.error('Failed to fetch events', err);
     } finally {
-      setLoading(false);
+      if (showInitialLoading) setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -29,12 +40,18 @@ const Dashboard = () => {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">Activity Feed</h1>
-          <p className="page-subtitle">Live view of Instagram comment triggers and DM automations.</p>
+          <p className="page-subtitle">Live real-time view of Instagram comment triggers and DM automations.</p>
         </div>
-        <button className="btn btn-outline" onClick={fetchEvents} disabled={loading}>
-          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span>
+            Real-time Sync Active
+          </span>
+          <button className="btn btn-outline" onClick={() => fetchEvents(false)} disabled={isRefreshing}>
+            <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
@@ -66,7 +83,7 @@ const Dashboard = () => {
                   </td>
                 </tr>
               ))}
-              {events.length === 0 && (
+              {events.length === 0 && !loading && (
                 <tr>
                   <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '32px' }}>
                     No events captured yet.
