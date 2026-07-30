@@ -10,10 +10,7 @@ const sendDM = async (target, text) => {
       return { message_id: 'mock_msg_' + Date.now() };
     }
 
-    let recipientObj = target;
-    if (typeof target === 'string') {
-      recipientObj = { id: target };
-    }
+    let recipientObj = typeof target === 'string' ? { id: target } : target;
 
     const url = `https://graph.facebook.com/v20.0/me/messages`;
     const response = await axios.post(url, {
@@ -31,12 +28,13 @@ const sendDM = async (target, text) => {
   }
 };
 
-// Step 1: Sent when user comments on a post (e.g. "link")
-const sendInitialButtonDM = async (target) => {
+// Step 1: Sent when user comments on a post
+const sendInitialButtonDM = async (target, customText) => {
+  const text = customText || "Hello jii 🤍 !\n\nI know exactly how valuable time is. That's why everything on my page is packed with free, premium value to help you level up.\n\nClick below and I'll send you the link in just a sec ✨";
   try {
     const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
     const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
-    if (!accountId || !accessToken) return sendDM(target, 'Hello jii 🤍 ! Click below and I\'ll send you the link in just a sec ✨\n\n👉 Send me the link');
+    if (!accountId || !accessToken) return sendDM(target, text);
 
     let recipientObj = typeof target === 'string' ? { id: target } : target;
 
@@ -44,7 +42,7 @@ const sendInitialButtonDM = async (target) => {
     const response = await axios.post(url, {
       recipient: recipientObj,
       message: {
-        text: "Hello jii 🤍 !\n\nI know exactly how valuable time is. That's why everything on my page is packed with free, premium value to help you level up.\n\nClick below and I'll send you the link in just a sec ✨",
+        text,
         quick_replies: [
           {
             content_type: "text",
@@ -59,16 +57,17 @@ const sendInitialButtonDM = async (target) => {
     return response.data;
   } catch (error) {
     console.warn('[Interactive DM] Quick reply fallback to text:', error?.response?.data || error.message);
-    return sendDM(target, "Hello jii 🤍 !\n\nClick below and I'll send you the link in just a sec ✨\n\n👉 Reply 'Send me the link'");
+    return sendDM(target, text);
   }
 };
 
-// Step 2: Sent when user clicks "Send me the link" but is not following yet
-const sendNotFollowingButtonsDM = async (target) => {
+// Step 2: Sent when user clicks "Send me the link" but isn't following yet
+const sendNotFollowingButtonsDM = async (target, customText) => {
+  const text = customText || "Wait, you're not following the page yet? 🧠\n\nThis is exclusive to the crew who actually want to grow. Trust me, you won't regret following-you'll learn something new from every single post!\nwelcome to the crew 💛";
   try {
     const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
     const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
-    if (!accountId || !accessToken) return sendDM(target, "Wait, you're not following the page yet? 🧠\n\nThis is exclusive to the crew who actually want to grow. Welcome to the crew 💛\n\n👉 Reply 'I'm following'");
+    if (!accountId || !accessToken) return sendDM(target, text);
 
     let recipientObj = typeof target === 'string' ? { id: target } : target;
 
@@ -76,7 +75,7 @@ const sendNotFollowingButtonsDM = async (target) => {
     const response = await axios.post(url, {
       recipient: recipientObj,
       message: {
-        text: "Wait, you're not following the page yet? 🧠\n\nThis is exclusive to the crew who actually want to grow. Trust me, you won't regret following-you'll learn something new from every single post!\nwelcome to the crew 💛",
+        text,
         quick_replies: [
           {
             content_type: "text",
@@ -91,34 +90,31 @@ const sendNotFollowingButtonsDM = async (target) => {
     return response.data;
   } catch (error) {
     console.warn('[Interactive DM] Not following button fallback to text:', error?.response?.data || error.message);
-    return sendDM(target, "Wait, you're not following the page yet? 🧠\n\nPlease follow @vishalpanwarr first, then reply 'I'm following'");
+    return sendDM(target, text);
   }
 };
 
 // Step 3: Sent when user clicks "I'm following ✓" (or already follows)
-const sendFinalResourceButtonsDM = async (target, customMessage) => {
+const sendFinalResourceButtonsDM = async (target, customText) => {
+  const text = customText || "Perfect! 🚀\nNow get the apply link 👇\n\n📢 Daily Job update: https://example.com/jobs\n👟 Nike apply link: https://example.com/nike\n✈️ Cleartrip apply form: https://example.com/cleartrip";
   try {
     const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
     const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
-    const defaultText = customMessage || "Perfect! 🚀\nNow get the apply link 👇\n\n🔗 Apply Link: https://example.com/guide";
-
-    if (!accountId || !accessToken) return sendDM(target, defaultText);
+    if (!accountId || !accessToken) return sendDM(target, text);
 
     let recipientObj = typeof target === 'string' ? { id: target } : target;
 
     const url = `https://graph.facebook.com/v20.0/me/messages`;
     const response = await axios.post(url, {
       recipient: recipientObj,
-      message: {
-        text: "Perfect! 🚀\nNow get the apply link 👇\n\n📢 Daily Job update: https://example.com/jobs\n👟 Nike apply link: https://example.com/nike\n✈️ Cleartrip apply form: https://example.com/cleartrip"
-      }
+      message: { text }
     }, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     return response.data;
   } catch (error) {
     console.warn('[Interactive DM] Final resource button fallback to text:', error?.response?.data || error.message);
-    return sendDM(target, customMessage || "Perfect! 🚀\nNow get the apply link 👇\n\nhttps://example.com/guide");
+    return sendDM(target, text);
   }
 };
 

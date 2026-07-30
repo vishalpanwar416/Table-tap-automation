@@ -60,7 +60,6 @@ const handleWebhookEvent = async (req, res) => {
   }
   
   if (body.object === 'instagram') {
-    // Acknowledge receipt to Meta quickly
     res.status(200).send('EVENT_RECEIVED');
 
     try {
@@ -81,12 +80,10 @@ const handleWebhookEvent = async (req, res) => {
 
               if (!fromUser || !fromUser.id) continue;
 
-              // Prevent loop for page's own comments
               if (process.env.INSTAGRAM_ACCOUNT_ID && fromUser.id === process.env.INSTAGRAM_ACCOUNT_ID) {
                 continue;
               }
 
-              // Trigger keyword match check
               let isTriggered = false;
               if (text.includes('example') || text.includes('test')) {
                 isTriggered = true;
@@ -100,14 +97,13 @@ const handleWebhookEvent = async (req, res) => {
               if (isTriggered && mediaId) {
                 const targetRecipient = { id: fromUser.id };
 
-                // Step 1: Send initial interactive message with button "Send me the link"
+                // Step 1: Send initial interactive message template from DB
                 try {
-                  await sendInitialButtonDM(targetRecipient);
+                  await sendInitialButtonDM(targetRecipient, config.initialMessage);
                 } catch (dmErr) {
                   console.error('[Webhook] Initial DM error:', dmErr?.response?.data || dmErr.message);
                 }
 
-                // Store event in DB as awaiting_follow / pending
                 await CommentEvent.create({
                   instagramUserId: fromUser.id,
                   username: fromUser.username || fromUser.id,
@@ -120,7 +116,7 @@ const handleWebhookEvent = async (req, res) => {
           }
         }
 
-        // --- 2. HANDLE INTERACTIVE BUTTON CLICK WEBHOOKS (Messaging / Quick Replies / Postbacks) ---
+        // --- 2. HANDLE INTERACTIVE BUTTON CLICK WEBHOOKS ---
         if (entry.messaging && Array.isArray(entry.messaging)) {
           for (const messaging of entry.messaging) {
             const senderId = messaging.sender && messaging.sender.id;
@@ -132,19 +128,18 @@ const handleWebhookEvent = async (req, res) => {
 
             const payload = postbackPayload || quickReplyPayload || messageText;
 
-            // Scenario A: User clicks "Send me the link"
+            // Step 2 Click: "Send me the link"
             if (payload === 'SEND_LINK_CLICKED' || payload.includes('send me the link')) {
               const isFollowing = await checkFollowStatus(senderId);
               if (isFollowing) {
                 await sendFinalResourceButtonsDM(senderId, config.finalMessage);
                 await CommentEvent.updateMany({ instagramUserId: senderId }, { status: 'completed' });
               } else {
-                // Send "Wait, you're not following yet?" button message
-                await sendNotFollowingButtonsDM(senderId);
+                await sendNotFollowingButtonsDM(senderId, config.notFollowingMessage);
               }
             }
 
-            // Scenario B: User clicks "I'm following ✓"
+            // Step 3 Click: "I'm following ✓"
             if (payload === 'IM_FOLLOWING_CLICKED' || payload.includes('following')) {
               console.log(`[Webhook] User ${senderId} clicked "I'm following ✓". Delivering final resource links...`);
               await CommentEvent.updateMany({ instagramUserId: senderId }, { status: 'completed' });

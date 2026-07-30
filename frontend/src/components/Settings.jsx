@@ -8,8 +8,9 @@ const Settings = () => {
   const [config, setConfig] = useState({
     triggerMode: 'keyword',
     keywords: 'link, guide, send',
-    notFollowingMessage: 'Hey! Thanks for the interest. Please follow our page first, and I will automatically send you the link! 🚀',
-    finalMessage: 'Here is the link you requested: https://example.com/guide 👇'
+    initialMessage: "Hello jii 🤍 !\n\nI know exactly how valuable time is. That's why everything on my page is packed with free, premium value to help you level up.\n\nClick below and I'll send you the link in just a sec ✨",
+    notFollowingMessage: "Wait, you're not following the page yet? 🧠\n\nThis is exclusive to the crew who actually want to grow. Trust me, you won't regret following-you'll learn something new from every single post!\nwelcome to the crew 💛",
+    finalMessage: "Perfect! 🚀\nNow get the apply link 👇\n\n📢 Daily Job update: https://example.com/jobs\n👟 Nike apply link: https://example.com/nike\n✈️ Cleartrip apply form: https://example.com/cleartrip"
   });
 
   const [saving, setSaving] = useState(false);
@@ -24,10 +25,11 @@ const Settings = () => {
       const { data } = await axios.get(`${API_URL}/config`);
       if (data && data._id) {
         setConfig({
-          triggerMode: data.triggerMode,
-          keywords: data.keywords,
-          notFollowingMessage: data.notFollowingMessage,
-          finalMessage: data.finalMessage
+          triggerMode: data.triggerMode || 'keyword',
+          keywords: data.keywords || 'link, guide, send',
+          initialMessage: data.initialMessage || "Hello jii 🤍 !\n\nI know exactly how valuable time is. That's why everything on my page is packed with free, premium value to help you level up.\n\nClick below and I'll send you the link in just a sec ✨",
+          notFollowingMessage: data.notFollowingMessage || "Wait, you're not following the page yet? 🧠\n\nThis is exclusive to the crew who actually want to grow. Trust me, you won't regret following-you'll learn something new from every single post!\nwelcome to the crew 💛",
+          finalMessage: data.finalMessage || "Perfect! 🚀\nNow get the apply link 👇\n\n📢 Daily Job update: https://example.com/jobs\n👟 Nike apply link: https://example.com/nike\n✈️ Cleartrip apply form: https://example.com/cleartrip"
         });
       }
     } catch (err) {
@@ -63,10 +65,10 @@ const Settings = () => {
     <div className="settings-page">
       <div className="page-header">
         <h1 className="page-title">Automation Settings</h1>
-        <p className="page-subtitle">Configure your DM funnels and trigger keywords.</p>
+        <p className="page-subtitle">Configure your DM funnels, templates, and trigger keywords.</p>
       </div>
 
-      <form className="glass-panel" onSubmit={handleSave} style={{ maxWidth: '600px' }}>
+      <form className="glass-panel" onSubmit={handleSave} style={{ maxWidth: '650px' }}>
         
         <div className="form-group">
           <label className="form-label">Trigger Mode</label>
@@ -95,27 +97,43 @@ const Settings = () => {
           </div>
         )}
 
-        <div className="form-group" style={{ marginTop: '32px' }}>
-          <label className="form-label">Message: User NOT Following</label>
+        <div className="form-group" style={{ marginTop: '24px' }}>
+          <label className="form-label">Step 1 Template: Initial Comment Reply</label>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-            This DM is sent immediately if the commenter doesn't follow the page yet.
+            This message is sent immediately when a user comments on your post. Includes [Send me the link] button.
+          </p>
+          <textarea 
+            className="form-control" 
+            name="initialMessage"
+            rows={4}
+            value={config.initialMessage}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="form-group" style={{ marginTop: '24px' }}>
+          <label className="form-label">Step 2 Template: User NOT Following</label>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            Sent when user clicks "Send me the link" but doesn't follow yet. Includes [I'm following ✓] button.
           </p>
           <textarea 
             className="form-control" 
             name="notFollowingMessage"
+            rows={4}
             value={config.notFollowingMessage}
             onChange={handleChange}
           />
         </div>
 
-        <div className="form-group">
-          <label className="form-label">Message: Final Resource Link</label>
+        <div className="form-group" style={{ marginTop: '24px' }}>
+          <label className="form-label">Step 3 Template: Final Resource & Apply Links</label>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-            This DM is sent once we verify they follow the page.
+            Sent once user follows or clicks "I'm following ✓". Include your target links here.
           </p>
           <textarea 
             className="form-control" 
             name="finalMessage"
+            rows={5}
             value={config.finalMessage}
             onChange={handleChange}
           />
