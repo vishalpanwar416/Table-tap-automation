@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001/api/admin';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV
+  ? 'http://localhost:5001/api/admin'
+  : 'https://table-tap-automation.onrender.com/api/admin');
 
 const Settings = () => {
   const [config, setConfig] = useState({
