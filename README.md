@@ -21,6 +21,7 @@ MONGODB_URI=mongodb://127.0.0.1:27017/tabletap
 META_VERIFY_TOKEN=replace-with-a-random-value
 INSTAGRAM_APP_SECRET=your-meta-app-secret
 INSTAGRAM_APP_ID=your-meta-app-id
+META_GRAPH_API_VERSION=v23.0
 INSTAGRAM_ACCESS_TOKEN=page-access-token
 INSTAGRAM_ACCOUNT_ID=instagram-business-account-id
 NGROK_URL=https://your-public-host
@@ -29,6 +30,19 @@ NGROK_URL=https://your-public-host
 The webhook verifies Meta's `hub.challenge` on `GET`, and validates
 `X-Hub-Signature-256` on `POST` whenever `INSTAGRAM_APP_SECRET` is configured.
 The frontend production build is written to `frontend/dist` with `npm run build`.
+
+## Receiving real Instagram comments
+
+A successful **Test** delivery in Meta proves only that the callback URL is
+reachable. For real comments, the Instagram professional account must also be
+subscribed to the app and the app must have the `comments` webhook field enabled
+under the **Instagram** object in Meta's Webhooks dashboard.
+
+After deploying this version, reconnect the account through `/api/auth/login`.
+The callback subscribes both the linked Facebook Page and the Instagram
+professional account (`comments`, `messages`, and `messaging_postbacks`). Ensure
+the deployed environment has a current page access token, the matching app
+secret, and `META_GRAPH_API_VERSION` set to a supported Graph API version.
 
 ## Automation flow
 
