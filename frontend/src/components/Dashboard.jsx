@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, CheckCircle, Clock, Send, UserCheck, UserX } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV
-  ? 'http://localhost:5001/api/admin'
-  : 'https://table-tap-automation.onrender.com/api/admin');
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {
   const [events, setEvents] = useState([]);
