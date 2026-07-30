@@ -11,7 +11,7 @@ const sendDM = async (recipientId, text) => {
       return { message_id: 'mock_msg_' + Date.now() };
     }
 
-    const url = `https://graph.facebook.com/v19.0/${accountId}/messages`;
+    const url = `https://graph.facebook.com/v20.0/me/messages`;
     const response = await axios.post(url, {
       recipient: { id: recipientId },
       message: { text }
