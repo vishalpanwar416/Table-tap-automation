@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '../config/api';
 
 const Settings = () => {
   const [config, setConfig] = useState({
