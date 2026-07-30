@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#5b36e8" />
+    <title>AutoDM · Inbox automation</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#overview"><span class="brand-mark"><i></i><i></i></span>AutoDM</a>
+        <nav aria-label="Main navigation">
+          <a class="nav-link active" href="#overview"><span>⌘</span> Overview</a>
+          <a class="nav-link" href="#activity"><span>◴</span> Activity <b id="nav-count">0</b></a>
+          <a class="nav-link" href="#automation"><span>✦</span> Automation</a>
+        </nav>
+        <div class="sidebar-bottom"><div class="help-card"><span>✦</span><strong>Need a hand?</strong><p>Set up your first Instagram automation in minutes.</p><a href="#automation">View setup</a></div><p class="privacy-link"><a href="/privacy">Privacy policy</a></p></div>
+      </aside>
+
+      <main>
+        <header class="topbar"><button class="menu-button" aria-label="Open menu">☰</button><div><p class="eyebrow">WORKSPACE</p><h1>Good morning, there <span>✦</span></h1></div><div class="top-actions"><a class="connect-button" href="/api/auth/login">Connect Instagram <span>↗</span></a><button class="avatar" aria-label="Account">A</button></div></header>
+
+        <section id="overview" class="hero"><div><p class="eyebrow">AUTOMATION OVERVIEW</p><h2>Your conversations,<br /><em>on autopilot.</em></h2><p>Turn every meaningful comment into a warm, guided DM conversation.</p></div><div class="hero-orb" aria-hidden="true"><span>✦</span></div></section>
+
+        <section class="metrics" aria-label="Automation statistics"><article><div class="metric-icon purple">◌</div><p>Comments received</p><strong id="comments-count">—</strong><small id="comments-caption">Loading activity</small></article><article><div class="metric-icon pink">↗</div><p>DMs sent</p><strong id="dms-count">—</strong><small id="dms-caption">Loading activity</small></article><article><div class="metric-icon orange">✓</div><p>Completed</p><strong id="completed-count">—</strong><small id="completed-caption">Loading activity</small></article></section>
+
+        <section id="activity" class="panel activity-panel"><div class="section-heading"><div><p class="eyebrow">LIVE ACTIVITY</p><h2>Recent conversations</h2></div><button class="text-button" id="refresh-button">Refresh <span>↻</span></button></div><div class="table-wrap"><table><thead><tr><th>PERSON</th><th>COMMENT</th><th>STATUS</th><th>RECEIVED</th></tr></thead><tbody id="events-body"><tr><td colspan="4" class="empty">Fetching recent activity…</td></tr></tbody></table></div></section>
+
+        <section id="automation" class="automation-grid"><div class="panel automation-card"><div class="section-heading"><div><p class="eyebrow">AUTOMATION RULE</p><h2>Comment trigger</h2></div><span class="status-dot">Active</span></div><form id="config-form"><label>When someone comments<select id="trigger-mode" name="triggerMode"><option value="keyword">A matching keyword</option><option value="any">Any comment</option></select></label><label id="keywords-label">Keywords <span>Separate with commas</span><input id="keywords" name="keywords" placeholder="link, menu, order" /></label><div class="message-fields"><label>First message<textarea id="initial-message" name="initialMessage" rows="4"></textarea></label><label>After they follow<textarea id="final-message" name="finalMessage" rows="4"></textarea></label></div><div class="form-footer"><span id="save-state" aria-live="polite"></span><button class="save-button" type="submit">Save changes <span>→</span></button></div></form></div><aside class="tip-card"><span class="tip-icon">✦</span><p class="eyebrow">QUICK TIP</p><h3>Keep it natural.</h3><p>Short, friendly replies get the most taps. Use a simple keyword like <b>“menu”</b> to start the conversation.</p></aside></section>
+      </main>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>

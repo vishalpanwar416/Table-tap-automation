@@ -8,8 +8,6 @@ const APP_ID = process.env.INSTAGRAM_APP_ID;
 const APP_SECRET = process.env.INSTAGRAM_APP_SECRET;
 const NGROK_URL = process.env.NGROK_URL;
 
-// GET /api/auth/login
-// Redirects the user to Facebook OAuth login page for Instagram Login for Business
 router.get('/login', (req, res) => {
   const redirectUri = `${NGROK_URL}/api/auth/callback`;
   const scope = 'instagram_manage_messages,instagram_manage_comments,pages_show_list,pages_manage_metadata';
@@ -19,8 +17,6 @@ router.get('/login', (req, res) => {
   res.redirect(authUrl);
 });
 
-// GET /api/auth/callback
-// Facebook redirects here after user logs in
 router.get('/callback', async (req, res) => {
   const { code, error } = req.query;
 
@@ -36,7 +32,6 @@ router.get('/callback', async (req, res) => {
   try {
     const redirectUri = `${NGROK_URL}/api/auth/callback`;
 
-    // Exchange code for user access token
     const tokenRes = await axios.post('https://graph.facebook.com/v20.0/oauth/access_token', 
       new URLSearchParams({
         client_id: APP_ID,
@@ -51,7 +46,6 @@ router.get('/callback', async (req, res) => {
     
     console.log('[OAuth] Access Token received. Fetching linked Facebook Pages and Instagram accounts...');
 
-    // Fetch the list of Facebook Pages owned by the user, and find the Instagram Account connected to it
     const pagesRes = await axios.get(`https://graph.facebook.com/v20.0/me/accounts?fields=name,access_token,instagram_business_account&access_token=${access_token}`);
     const pages = pagesRes.data.data;
     
@@ -96,7 +90,6 @@ router.get('/callback', async (req, res) => {
 
     console.log(`[OAuth] ✅ Instagram Account Authorized: @${username} (ID: ${igAccountId})`);
     
-    // Automatically subscribe the Facebook Page to Webhooks (feed, messages, comments)
     try {
       await axios.post(`https://graph.facebook.com/v20.0/${linkedPage.id}/subscribed_apps?subscribed_fields=feed,messages,messaging_postbacks,message_reads&access_token=${pageAccessToken}`);
       console.log(`[OAuth] Automatically subscribed Page (${linkedPage.id}) to webhooks.`);
@@ -104,11 +97,9 @@ router.get('/callback', async (req, res) => {
       console.warn('[OAuth] Could not auto-subscribe page webhooks:', subErr?.response?.data || subErr.message);
     }
     
-    // Update active memory
     process.env.INSTAGRAM_ACCESS_TOKEN = pageAccessToken;
     process.env.INSTAGRAM_ACCOUNT_ID = igAccountId;
     
-    // Update .env file
     const envPath = path.join(__dirname, '../.env');
     let envContent = fs.readFileSync(envPath, 'utf8');
     

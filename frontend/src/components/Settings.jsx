@@ -64,12 +64,13 @@ const Settings = () => {
   return (
     <div className="settings-page">
       <div className="page-header">
-        <h1 className="page-title">Table-Tap Automation Settings</h1>
-        <p className="page-subtitle">Configure your Table-Tap DM funnels, templates, and trigger keywords.</p>
+        <div><h1 className="page-title">Settings</h1></div>
       </div>
 
-      <form className="glass-panel" onSubmit={handleSave} style={{ maxWidth: '650px' }}>
-        
+      <div className="settings-layout"><form className="glass-panel settings-panel" onSubmit={handleSave}>
+        <section className="form-section">
+          <h2 className="section-title">Trigger rules</h2>
+        <div className="trigger-fields">
         <div className="form-group">
           <label className="form-label">Trigger Mode</label>
           <select 
@@ -96,12 +97,12 @@ const Settings = () => {
             />
           </div>
         )}
+        </div>
+        </section>
 
-        <div className="form-group" style={{ marginTop: '24px' }}>
-          <label className="form-label">Step 1 Template: Initial Comment Reply</label>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-            This message is sent immediately when a user comments on your post. Includes [Send me the link] button.
-          </p>
+        <section className="form-section"><h2 className="section-title">Messages</h2>
+        <div className="form-group message-field">
+          <label className="form-label">Initial reply</label>
           <textarea 
             className="form-control" 
             name="initialMessage"
@@ -111,11 +112,8 @@ const Settings = () => {
           />
         </div>
 
-        <div className="form-group" style={{ marginTop: '24px' }}>
-          <label className="form-label">Step 2 Template: User NOT Following</label>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-            Sent when user clicks "Send me the link" but doesn't follow yet. Includes [I'm following ✓] button.
-          </p>
+        <div className="form-group message-field">
+          <label className="form-label">Not following</label>
           <textarea 
             className="form-control" 
             name="notFollowingMessage"
@@ -125,11 +123,8 @@ const Settings = () => {
           />
         </div>
 
-        <div className="form-group" style={{ marginTop: '24px' }}>
-          <label className="form-label">Step 3 Template: Final Resource & Table-Tap Links</label>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-            Sent once user follows or clicks "I'm following ✓". Include your target Table-Tap links here.
-          </p>
+        <div className="form-group message-field">
+          <label className="form-label">Final message</label>
           <textarea 
             className="form-control" 
             name="finalMessage"
@@ -139,14 +134,15 @@ const Settings = () => {
           />
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px' }}>
+        </section>
+        <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>
             <Save size={18} />
-            {saving ? 'Saving...' : 'Save Table-Tap Config'}
+            {saving ? 'Saving...' : 'Save changes'}
           </button>
         </div>
 
-      </form>
+      </form></div>
     </div>
   );
 };

@@ -29,7 +29,6 @@ const sendDM = async (target, text) => {
   }
 };
 
-// Step 1: Sent when user comments on a post
 const sendInitialButtonDM = async (target, customText) => {
   const text = customText || "Hey there! 🍽️✨\n\nThanks for reaching out! Table-Tap makes dining out seamless, fast, and interactive.\n\nClick below and I'll send you your exclusive access link in just a sec! 👇";
   try {
@@ -62,7 +61,6 @@ const sendInitialButtonDM = async (target, customText) => {
   }
 };
 
-// Step 2: Sent when user clicks "Send me the link" but hasn't verified follow yet
 const sendNotFollowingButtonsDM = async (target, customText) => {
   const text = customText || "Wait, you're not following us yet? 🍕\n\nWe share exclusive food deals, secret dining spots, and instant restaurant updates. Hit follow below and join the Table-Tap family! 💛";
   try {
@@ -95,7 +93,6 @@ const sendNotFollowingButtonsDM = async (target, customText) => {
   }
 };
 
-// Step 3: Sent when user clicks "I'm following ✓"
 const sendFinalResourceButtonsDM = async (target, customText) => {
   const text = customText || "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://app.table-tap.in\n🔥 Exclusive Dining Deals: https://app.table-tap.in/offers";
   try {
@@ -119,13 +116,11 @@ const sendFinalResourceButtonsDM = async (target, customText) => {
   }
 };
 
-// Attempts to check user against Meta Graph API follower list, falling back to DB follow logs
 const checkFollowStatus = async (recipientId, username) => {
   try {
     const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
     const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
 
-    // 1. Try checking Meta Graph API follower list if available
     if (accountId && accessToken) {
       try {
         const res = await axios.get(`https://graph.facebook.com/v20.0/${accountId}/followers`, {
@@ -142,7 +137,6 @@ const checkFollowStatus = async (recipientId, username) => {
       }
     }
 
-    // 2. Fallback: Check if user is recorded as following in MongoDB
     const latestEvent = await CommentEvent.findOne({ 
       $or: [{ instagramUserId: String(recipientId) }, { username: String(username) }]
     }).sort({ createdAt: -1 });

@@ -1,12 +1,15 @@
 const CommentEvent = require('../models/CommentEvent');
 const AppConfig = require('../models/AppConfig');
+const EventService = require('../services/eventService');
+const ConfigurationService = require('../services/configurationService');
 const { sendDM } = require('../services/instagramService');
 
-// --- Events ---
+const eventService = new EventService(CommentEvent);
+const configurationService = new ConfigurationService(AppConfig);
+
 const getEvents = async (req, res) => {
   try {
-    const events = await CommentEvent.find().sort({ createdAt: -1 }).limit(100);
-    res.json(events);
+    res.json(await eventService.listRecent());
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -14,41 +17,27 @@ const getEvents = async (req, res) => {
 
 const updateEventStatus = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
-    const event = await CommentEvent.findById(id);
-    if (event) {
-      event.status = status;
-      event.updatedAt = Date.now();
-      await event.save();
+    const event = await eventService.updateStatus(req.params.id, req.body.status);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
 
-      if (status === 'completed') {
-        const config = await AppConfig.findOne();
-        if (config) {
-          try {
-            await sendDM(event.instagramUserId, config.finalMessage);
-            console.log(`[Admin] Sent final DM for marked event: ${event.instagramUserId}`);
-          } catch (dmErr) {
-            console.error('[Admin] DM send error:', dmErr?.response?.data || dmErr.message);
-          }
-        }
+    if (event.status === 'completed') {
+      const config = await configurationService.get();
+      try {
+        await sendDM(event.instagramUserId, config.finalMessage);
+      } catch (error) {
+        console.error('[Admin] DM send error:', error?.response?.data || error.message);
       }
     }
+
     res.json(event);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// --- Config ---
 const getConfig = async (req, res) => {
   try {
-    let config = await AppConfig.findOne();
-    if (!config) {
-      // Create default if not exists
-      config = await AppConfig.create({});
-    }
-    res.json(config);
+    res.json(await configurationService.get());
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -56,22 +45,10 @@ const getConfig = async (req, res) => {
 
 const updateConfig = async (req, res) => {
   try {
-    const configData = req.body;
-    let config = await AppConfig.findOne();
-    if (!config) {
-      config = await AppConfig.create(configData);
-    } else {
-      config = await AppConfig.findOneAndUpdate({}, { ...configData, updatedAt: Date.now() }, { new: true });
-    }
-    res.json(config);
+    res.json(await configurationService.update(req.body));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = {
-  getEvents,
-  updateEventStatus,
-  getConfig,
-  updateConfig
-};
+module.exports = { getEvents, updateEventStatus, getConfig, updateConfig };
