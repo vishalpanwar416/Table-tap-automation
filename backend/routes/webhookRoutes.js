@@ -1,9 +1,11 @@
 const express = require('express');
-const router = express.Router();
-const { verifyWebhook, handleWebhookEvent } = require('../controllers/webhookController');
+const createWebhookRoutes = (controller) => {
+  const router = express.Router();
 
-router.get('/', verifyWebhook);
+  router.get('/', controller.verifyWebhook);
+  router.post('/', controller.handleWebhookEvent);
 
-router.post('/', handleWebhookEvent);
+  return router;
+};
 
-module.exports = router;
+module.exports = createWebhookRoutes;

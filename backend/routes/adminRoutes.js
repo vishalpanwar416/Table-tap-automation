@@ -1,11 +1,14 @@
 const express = require('express');
-const router = express.Router();
-const { getEvents, updateEventStatus, getConfig, updateConfig } = require('../controllers/adminController');
+const createAdminRoutes = (controller) => {
+  const router = express.Router();
 
-router.get('/events', getEvents);
-router.put('/events/:id', updateEventStatus);
+  router.get('/events', controller.getEvents);
+  router.put('/events/:id', controller.updateEventStatus);
 
-router.get('/config', getConfig);
-router.put('/config', updateConfig);
+  router.get('/config', controller.getConfig);
+  router.put('/config', controller.updateConfig);
 
-module.exports = router;
+  return router;
+};
+
+module.exports = createAdminRoutes;

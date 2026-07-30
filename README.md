@@ -55,3 +55,11 @@ Instagram messaging also requires an eligible messaging conversation and is
 subject to Meta's 24-hour messaging window and applicable message-tag policies.
 Before production use, ensure the app has the needed approved permissions,
 webhook subscriptions, and a compliant messaging policy.
+
+## Backend structure
+
+`server.js` is the composition root: it creates repositories, the Instagram
+gateway, and application services in `config/container.js`. Controllers only
+translate HTTP requests and responses. The automation and follow-up services
+depend on small repository/gateway contracts, so their behavior is covered by
+fast Node tests without a database or network connection.
