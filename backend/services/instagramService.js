@@ -62,7 +62,7 @@ const sendInitialButtonDM = async (target, customText) => {
   }
 };
 
-// Step 2: Sent when user clicks "Send me the link" but isn't following yet
+// Step 2: Sent when user clicks "Send me the link" but hasn't verified follow yet for this session
 const sendNotFollowingButtonsDM = async (target, customText) => {
   const text = customText || "Wait, you're not following us yet? 🍕\n\nWe share exclusive food deals, secret dining spots, and instant restaurant updates. Hit follow below and join the Table-Tap family! 💛";
   try {
@@ -95,7 +95,7 @@ const sendNotFollowingButtonsDM = async (target, customText) => {
   }
 };
 
-// Step 3: Sent when user clicks "I'm following ✓" (or already follows)
+// Step 3: Sent when user clicks "I'm following ✓"
 const sendFinalResourceButtonsDM = async (target, customText) => {
   const text = customText || "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://app.table-tap.in\n🔥 Exclusive Dining Deals: https://app.table-tap.in/offers";
   try {
@@ -119,16 +119,15 @@ const sendFinalResourceButtonsDM = async (target, customText) => {
   }
 };
 
-// Checks if user has verified follow status in MongoDB
+// Checks if the latest comment event for this user has been verified as following
 const checkFollowStatus = async (recipientId) => {
   try {
-    const completedUserEvent = await CommentEvent.findOne({ 
-      instagramUserId: String(recipientId), 
-      status: 'completed' 
-    });
-    
-    const isFollowing = !!completedUserEvent;
-    console.log(`[FOLLOW CHECK] User ${recipientId} follow status: ${isFollowing}`);
+    const latestEvent = await CommentEvent.findOne({ 
+      instagramUserId: String(recipientId)
+    }).sort({ createdAt: -1 });
+
+    const isFollowing = latestEvent ? latestEvent.isFollowing === true : false;
+    console.log(`[FOLLOW CHECK] User ${recipientId} latest event isFollowing status: ${isFollowing}`);
     return isFollowing;
   } catch (err) {
     console.error('[FOLLOW CHECK] Error checking follow status:', err);
