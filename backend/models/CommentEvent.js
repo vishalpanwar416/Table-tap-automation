@@ -5,6 +5,8 @@ const commentEventSchema = new mongoose.Schema({
   username: { type: String, required: true },
   commentText: { type: String, required: true },
   mediaId: { type: String, required: true },
+  isFollowing: { type: Boolean, default: false },
+  followedAt: { type: Date },
   status: { 
     type: String, 
     enum: ['pending', 'dm_sent', 'awaiting_follow', 'completed'], 

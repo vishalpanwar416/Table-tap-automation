@@ -97,6 +97,9 @@ const handleWebhookEvent = async (req, res) => {
               if (isTriggered && mediaId) {
                 const targetRecipient = { id: fromUser.id };
 
+                // Check if user already follows
+                const isFollowing = await checkFollowStatus(fromUser.id);
+
                 // Step 1: Send initial interactive message template from DB
                 try {
                   await sendInitialButtonDM(targetRecipient, config.initialMessage);
@@ -109,7 +112,8 @@ const handleWebhookEvent = async (req, res) => {
                   username: fromUser.username || fromUser.id,
                   commentText: commentVal.text || '',
                   mediaId,
-                  status: 'awaiting_follow'
+                  isFollowing: isFollowing,
+                  status: isFollowing ? 'completed' : 'awaiting_follow'
                 });
               }
             }
@@ -133,7 +137,7 @@ const handleWebhookEvent = async (req, res) => {
               const isFollowing = await checkFollowStatus(senderId);
               if (isFollowing) {
                 await sendFinalResourceButtonsDM(senderId, config.finalMessage);
-                await CommentEvent.updateMany({ instagramUserId: senderId }, { status: 'completed' });
+                await CommentEvent.updateMany({ instagramUserId: senderId }, { isFollowing: true, status: 'completed' });
               } else {
                 await sendNotFollowingButtonsDM(senderId, config.notFollowingMessage);
               }
@@ -141,8 +145,11 @@ const handleWebhookEvent = async (req, res) => {
 
             // Step 3 Click: "I'm following ✓"
             if (payload === 'IM_FOLLOWING_CLICKED' || payload.includes('following')) {
-              console.log(`[Webhook] User ${senderId} clicked "I'm following ✓". Delivering final resource links...`);
-              await CommentEvent.updateMany({ instagramUserId: senderId }, { status: 'completed' });
+              console.log(`[Webhook] User ${senderId} clicked "I'm following ✓". Recording follow in DB & delivering final links...`);
+              await CommentEvent.updateMany(
+                { instagramUserId: senderId }, 
+                { isFollowing: true, followedAt: new Date(), status: 'completed' }
+              );
               await sendFinalResourceButtonsDM(senderId, config.finalMessage);
             }
           }

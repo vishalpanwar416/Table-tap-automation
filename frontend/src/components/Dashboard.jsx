@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, CheckCircle, Clock, Send } from 'lucide-react';
+import { RefreshCw, CheckCircle, Clock, Send, UserCheck, UserX } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5001/api/admin';
@@ -10,10 +10,8 @@ const Dashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    // Initial fetch
     fetchEvents(true);
 
-    // Real-time polling interval every 3 seconds
     const interval = setInterval(() => {
       fetchEvents(false);
     }, 3000);
@@ -40,7 +38,7 @@ const Dashboard = () => {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title">Activity Feed</h1>
-          <p className="page-subtitle">Live real-time view of Instagram comment triggers and DM automations.</p>
+          <p className="page-subtitle">Live real-time view of Instagram comment triggers and follower conversions.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -61,7 +59,8 @@ const Dashboard = () => {
               <tr>
                 <th>User</th>
                 <th>Comment</th>
-                <th>Status</th>
+                <th>Follower Status</th>
+                <th>Automation Status</th>
                 <th>Time</th>
               </tr>
             </thead>
@@ -70,6 +69,19 @@ const Dashboard = () => {
                 <tr key={ev._id}>
                   <td style={{ fontWeight: 500 }}>@{ev.username}</td>
                   <td>"{ev.commentText}"</td>
+                  <td>
+                    {ev.isFollowing ? (
+                      <span className="badge completed" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                        <UserCheck size={12} style={{ marginRight: 4 }}/>
+                        Following
+                      </span>
+                    ) : (
+                      <span className="badge awaiting_follow" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                        <UserX size={12} style={{ marginRight: 4 }}/>
+                        Not Following
+                      </span>
+                    )}
+                  </td>
                   <td>
                     <span className={`badge ${ev.status}`}>
                       {ev.status === 'completed' && <CheckCircle size={12} style={{ marginRight: 4 }}/>}
@@ -85,7 +97,7 @@ const Dashboard = () => {
               ))}
               {events.length === 0 && !loading && (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '32px' }}>
+                  <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '32px' }}>
                     No events captured yet.
                   </td>
                 </tr>
