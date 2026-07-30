@@ -25,9 +25,9 @@ button:disabled { cursor: not-allowed; opacity: .65; }
 
 .app-container { display: flex; min-height: 100vh; }
 .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; width: 252px; height: 100vh; padding: 27px 16px 20px; background: #2d2926; color: #fffaf5; }
-.brand { display: flex; align-items: center; gap: 10px; padding: 0 10px; color: inherit; font-family: var(--display); font-size: 16px; font-weight: 700; letter-spacing: -.04em; }
-.brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; color: #2d2926; background: #ffb073; }
-.nav-label { margin: 45px 10px 10px; color: #aaa09a; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.brand { display: flex; align-items: center; justify-content: center; min-height: 96px; padding: 0 5px; }
+.brand-logo { display: block; width: min(100%, 188px); height: auto; mix-blend-mode: screen; object-fit: contain; }
+.nav-label { margin: 28px 10px 10px; color: #aaa09a; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .nav-links { display: grid; gap: 5px; }
 .nav-link { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 10px; color: #c9c1bb; font-size: 14px; font-weight: 600; text-decoration: none; transition: .2s ease; }
 .nav-link:hover { color: #fff; background: rgba(255,255,255,.06); }
@@ -121,5 +121,5 @@ textarea.form-control { min-height: 112px; resize: vertical; line-height: 1.55; 
 .settings-aside p { margin: 0; font-size: 12px; line-height: 1.65; }
 .settings-aside strong { color: var(--orange-deep); }
 
-@media (max-width: 880px) { .sidebar { width: 72px; padding: 23px 10px; } .brand { justify-content: center; padding: 0; } .brand span, .nav-label, .nav-link span, .sidebar-footer { display: none; } .nav-link { justify-content: center; padding: 12px; } .main-content { padding: 30px 28px; } .trigger-fields { grid-template-columns: 1fr; } .settings-aside { display: none; } .metric-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 880px) { .sidebar { width: 72px; padding: 23px 10px; } .brand { min-height: 44px; padding: 0; } .brand-logo { width: 42px; } .nav-label, .nav-link span, .sidebar-footer { display: none; } .nav-link { justify-content: center; padding: 12px; } .main-content { padding: 30px 28px; } .trigger-fields { grid-template-columns: 1fr; } .settings-aside { display: none; } .metric-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .main-content { padding: 24px 16px 35px; } .page-header { align-items: stretch; flex-direction: column; margin-bottom: 23px; } .page-header .btn { width: 100%; } .stats-grid { grid-template-columns: 1fr; gap: 10px; } .stat-card { padding: 14px; } .settings-panel { padding: 20px; } .sidebar { display: none; } .page-title { font-size: 27px; } .metric-grid, .dashboard-grid { grid-template-columns: 1fr; } }

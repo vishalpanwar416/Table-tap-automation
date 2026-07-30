@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Settings, Utensils, MessageSquareText } from 'lucide-react';
+import { LayoutDashboard, Settings, MessageSquareText } from 'lucide-react';
 import DashboardView from './components/Dashboard';
 import ActivityView from './components/Activity';
 import SettingsView from './components/Settings';
@@ -7,7 +7,9 @@ import SettingsView from './components/Settings';
 function App() {
   return <Router><div className="app-container">
     <aside className="sidebar">
-      <div className="brand"><div className="brand-mark"><Utensils size={18} /></div><span>tabletap</span></div>
+      <div className="brand">
+        <img className="brand-logo" src="/table-tap-logo.png" alt="Table Tap" />
+      </div>
       <p className="nav-label">Workspace</p>
       <nav className="nav-links">
         <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><LayoutDashboard size={19}/><span>Dashboard</span></NavLink>
