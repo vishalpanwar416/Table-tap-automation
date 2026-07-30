@@ -7,10 +7,10 @@ const API_URL = 'http://localhost:5001/api/admin';
 const Settings = () => {
   const [config, setConfig] = useState({
     triggerMode: 'keyword',
-    keywords: 'link, guide, send',
-    initialMessage: "Hello jii 🤍 !\n\nI know exactly how valuable time is. That's why everything on my page is packed with free, premium value to help you level up.\n\nClick below and I'll send you the link in just a sec ✨",
-    notFollowingMessage: "Wait, you're not following the page yet? 🧠\n\nThis is exclusive to the crew who actually want to grow. Trust me, you won't regret following-you'll learn something new from every single post!\nwelcome to the crew 💛",
-    finalMessage: "Perfect! 🚀\nNow get the apply link 👇\n\n📢 Daily Job update: https://example.com/jobs\n👟 Nike apply link: https://example.com/nike\n✈️ Cleartrip apply form: https://example.com/cleartrip"
+    keywords: 'link, table, tap, order, menu',
+    initialMessage: "Hey there! 🍽️✨\n\nThanks for reaching out! Table-Tap makes dining out seamless, fast, and interactive.\n\nClick below and I'll send you your exclusive access link in just a sec! 👇",
+    notFollowingMessage: "Wait, you're not following us yet? 🍕\n\nWe share exclusive food deals, secret dining spots, and instant restaurant updates. Hit follow below and join the Table-Tap family! 💛",
+    finalMessage: "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://table-tap.in\n🔥 Exclusive Dining Deals: https://table-tap.in"
   });
 
   const [saving, setSaving] = useState(false);
@@ -26,10 +26,10 @@ const Settings = () => {
       if (data && data._id) {
         setConfig({
           triggerMode: data.triggerMode || 'keyword',
-          keywords: data.keywords || 'link, guide, send',
-          initialMessage: data.initialMessage || "Hello jii 🤍 !\n\nI know exactly how valuable time is. That's why everything on my page is packed with free, premium value to help you level up.\n\nClick below and I'll send you the link in just a sec ✨",
-          notFollowingMessage: data.notFollowingMessage || "Wait, you're not following the page yet? 🧠\n\nThis is exclusive to the crew who actually want to grow. Trust me, you won't regret following-you'll learn something new from every single post!\nwelcome to the crew 💛",
-          finalMessage: data.finalMessage || "Perfect! 🚀\nNow get the apply link 👇\n\n📢 Daily Job update: https://example.com/jobs\n👟 Nike apply link: https://example.com/nike\n✈️ Cleartrip apply form: https://example.com/cleartrip"
+          keywords: data.keywords || 'link, table, tap, order, menu',
+          initialMessage: data.initialMessage || "Hey there! 🍽️✨\n\nThanks for reaching out! Table-Tap makes dining out seamless, fast, and interactive.\n\nClick below and I'll send you your exclusive access link in just a sec! 👇",
+          notFollowingMessage: data.notFollowingMessage || "Wait, you're not following us yet? 🍕\n\nWe share exclusive food deals, secret dining spots, and instant restaurant updates. Hit follow below and join the Table-Tap family! 💛",
+          finalMessage: data.finalMessage || "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://table-tap.in\n🔥 Exclusive Dining Deals: https://table-tap.in"
         });
       }
     } catch (err) {
@@ -48,7 +48,7 @@ const Settings = () => {
     setSaving(true);
     try {
       await axios.put(`${API_URL}/config`, config);
-      alert('Settings saved successfully!');
+      alert('Table-Tap settings saved successfully!');
     } catch (err) {
       console.error('Failed to save config', err);
       alert('Error saving settings');
@@ -58,14 +58,14 @@ const Settings = () => {
   };
 
   if (loading) {
-    return <div className="settings-page"><div className="page-header"><h1 className="page-title">Loading...</h1></div></div>;
+    return <div className="settings-page"><div className="page-header"><h1 className="page-title">Loading Table-Tap Config...</h1></div></div>;
   }
 
   return (
     <div className="settings-page">
       <div className="page-header">
-        <h1 className="page-title">Automation Settings</h1>
-        <p className="page-subtitle">Configure your DM funnels, templates, and trigger keywords.</p>
+        <h1 className="page-title">Table-Tap Automation Settings</h1>
+        <p className="page-subtitle">Configure your Table-Tap DM funnels, templates, and trigger keywords.</p>
       </div>
 
       <form className="glass-panel" onSubmit={handleSave} style={{ maxWidth: '650px' }}>
@@ -92,7 +92,7 @@ const Settings = () => {
               name="keywords" 
               value={config.keywords} 
               onChange={handleChange} 
-              placeholder="e.g. link, resources, guide"
+              placeholder="e.g. link, table, tap, order, menu"
             />
           </div>
         )}
@@ -126,9 +126,9 @@ const Settings = () => {
         </div>
 
         <div className="form-group" style={{ marginTop: '24px' }}>
-          <label className="form-label">Step 3 Template: Final Resource & Apply Links</label>
+          <label className="form-label">Step 3 Template: Final Resource & Table-Tap Links</label>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-            Sent once user follows or clicks "I'm following ✓". Include your target links here.
+            Sent once user follows or clicks "I'm following ✓". Include your target Table-Tap links here.
           </p>
           <textarea 
             className="form-control" 
@@ -142,7 +142,7 @@ const Settings = () => {
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px' }}>
           <button type="submit" className="btn btn-primary" disabled={saving}>
             <Save size={18} />
-            {saving ? 'Saving...' : 'Save Configuration'}
+            {saving ? 'Saving...' : 'Save Table-Tap Config'}
           </button>
         </div>
 
