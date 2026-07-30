@@ -95,20 +95,19 @@ const handleWebhookEvent = async (req, res) => {
               }
 
               if (isTriggered && mediaId) {
-                // Check if user already processed to prevent spam
-                const existingEvent = await CommentEvent.findOne({ instagramUserId: fromUser.id, mediaId });
-                if (existingEvent) continue; 
-
                 // Check follow status
                 const isFollowing = await checkFollowStatus(fromUser.id);
                 
+                // Target recipient object: Use comment_id for Instagram Private Reply (bypasses 24-hr messaging window restriction)
+                const targetRecipient = commentVal.id ? { comment_id: commentVal.id } : { id: fromUser.id };
+
                 let status = 'pending';
                 try {
                   if (isFollowing) {
-                    await sendDM(fromUser.id, config.finalMessage);
+                    await sendDM(targetRecipient, config.finalMessage);
                     status = 'completed';
                   } else {
-                    await sendDM(fromUser.id, config.notFollowingMessage);
+                    await sendDM(targetRecipient, config.notFollowingMessage);
                     status = 'awaiting_follow';
                   }
                 } catch (dmErr) {

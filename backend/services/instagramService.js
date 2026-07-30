@@ -1,25 +1,29 @@
 const axios = require('axios');
 
-const sendDM = async (recipientId, text) => {
+const sendDM = async (target, text) => {
   try {
     const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
     const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
     
-    // If the account ID isn't configured yet, just mock the successful response
-    if (!accountId) {
-      console.log(`[MOCK DM] To: ${recipientId}, Text: "${text}"`);
+    if (!accountId || !accessToken) {
+      console.log(`[MOCK DM] To:`, target, `Text: "${text}"`);
       return { message_id: 'mock_msg_' + Date.now() };
+    }
+
+    let recipientObj = target;
+    if (typeof target === 'string') {
+      recipientObj = { id: target };
     }
 
     const url = `https://graph.facebook.com/v20.0/me/messages`;
     const response = await axios.post(url, {
-      recipient: { id: recipientId },
+      recipient: recipientObj,
       message: { text }
     }, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     
-    console.log(`[REAL DM] Sent to ${recipientId} successfully.`);
+    console.log(`[REAL DM] Sent to`, recipientObj, `successfully.`);
     return response.data;
   } catch (error) {
     console.error('Failed to send Instagram DM:', error?.response?.data || error.message);

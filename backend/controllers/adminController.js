@@ -1,5 +1,6 @@
 const CommentEvent = require('../models/CommentEvent');
 const AppConfig = require('../models/AppConfig');
+const { sendDM } = require('../services/instagramService');
 
 // --- Events ---
 const getEvents = async (req, res) => {
@@ -15,12 +16,25 @@ const updateEventStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const updatedEvent = await CommentEvent.findByIdAndUpdate(
-      id, 
-      { status, updatedAt: Date.now() }, 
-      { new: true }
-    );
-    res.json(updatedEvent);
+    const event = await CommentEvent.findById(id);
+    if (event) {
+      event.status = status;
+      event.updatedAt = Date.now();
+      await event.save();
+
+      if (status === 'completed') {
+        const config = await AppConfig.findOne();
+        if (config) {
+          try {
+            await sendDM(event.instagramUserId, config.finalMessage);
+            console.log(`[Admin] Sent final DM for marked event: ${event.instagramUserId}`);
+          } catch (dmErr) {
+            console.error('[Admin] DM send error:', dmErr?.response?.data || dmErr.message);
+          }
+        }
+      }
+    }
+    res.json(event);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
