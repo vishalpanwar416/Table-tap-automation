@@ -24,15 +24,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleOverride = async (id) => {
-    try {
-      await axios.put(`${API_URL}/events/${id}`, { status: 'completed' });
-      setEvents(events.map(ev => ev._id === id ? { ...ev, status: 'completed' } : ev));
-    } catch (err) {
-      console.error('Failed to override status', err);
-    }
-  };
-
   return (
     <div className="dashboard">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -55,7 +46,6 @@ const Dashboard = () => {
                 <th>Comment</th>
                 <th>Status</th>
                 <th>Time</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -74,18 +64,11 @@ const Dashboard = () => {
                   <td style={{ color: 'var(--text-secondary)' }}>
                     {new Date(ev.createdAt).toLocaleString()}
                   </td>
-                  <td>
-                    {ev.status !== 'completed' && (
-                      <button className="btn btn-outline btn-sm" onClick={() => handleOverride(ev._id)}>
-                        Mark Followed
-                      </button>
-                    )}
-                  </td>
                 </tr>
               ))}
               {events.length === 0 && (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '32px' }}>
+                  <td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '32px' }}>
                     No events captured yet.
                   </td>
                 </tr>
