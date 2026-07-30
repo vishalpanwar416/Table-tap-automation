@@ -40,11 +40,7 @@ const Dashboard = () => {
           <h1 className="page-title">Activity Feed</h1>
           <p className="page-subtitle">Live real-time view of Instagram comment triggers and follower conversions.</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span>
-            Real-time Sync Active
-          </span>
+        <div>
           <button className="btn btn-outline" onClick={() => fetchEvents(false)} disabled={isRefreshing}>
             <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
             Refresh

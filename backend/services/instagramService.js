@@ -62,7 +62,7 @@ const sendInitialButtonDM = async (target, customText) => {
   }
 };
 
-// Step 2: Sent when user clicks "Send me the link" but hasn't verified follow yet for this session
+// Step 2: Sent when user clicks "Send me the link" but hasn't verified follow yet
 const sendNotFollowingButtonsDM = async (target, customText) => {
   const text = customText || "Wait, you're not following us yet? 🍕\n\nWe share exclusive food deals, secret dining spots, and instant restaurant updates. Hit follow below and join the Table-Tap family! 💛";
   try {
@@ -119,15 +119,36 @@ const sendFinalResourceButtonsDM = async (target, customText) => {
   }
 };
 
-// Checks if the latest comment event for this user has been verified as following
-const checkFollowStatus = async (recipientId) => {
+// Attempts to check user against Meta Graph API follower list, falling back to DB follow logs
+const checkFollowStatus = async (recipientId, username) => {
   try {
+    const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
+    const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
+
+    // 1. Try checking Meta Graph API follower list if available
+    if (accountId && accessToken) {
+      try {
+        const res = await axios.get(`https://graph.facebook.com/v20.0/${accountId}/followers`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const followers = res.data?.data || [];
+        const isFound = followers.some(f => f.id === String(recipientId) || (username && f.username === username));
+        if (isFound) {
+          console.log(`[GRAPH API FOLLOW CHECK] User ${username || recipientId} confirmed in account followers list!`);
+          return true;
+        }
+      } catch (graphErr) {
+        console.log('[GRAPH API FOLLOW CHECK] Graph API followers endpoint requires Advanced Access permission:', graphErr?.response?.data?.error?.message || graphErr.message);
+      }
+    }
+
+    // 2. Fallback: Check if user is recorded as following in MongoDB
     const latestEvent = await CommentEvent.findOne({ 
-      instagramUserId: String(recipientId)
+      $or: [{ instagramUserId: String(recipientId) }, { username: String(username) }]
     }).sort({ createdAt: -1 });
 
     const isFollowing = latestEvent ? latestEvent.isFollowing === true : false;
-    console.log(`[FOLLOW CHECK] User ${recipientId} latest event isFollowing status: ${isFollowing}`);
+    console.log(`[FOLLOW CHECK] User ${username || recipientId} follow status: ${isFollowing}`);
     return isFollowing;
   } catch (err) {
     console.error('[FOLLOW CHECK] Error checking follow status:', err);

@@ -97,9 +97,6 @@ const handleWebhookEvent = async (req, res) => {
               if (isTriggered && mediaId) {
                 const targetRecipient = { id: fromUser.id };
 
-                // Check if user already follows
-                const isFollowing = await checkFollowStatus(fromUser.id);
-
                 // Step 1: Send initial interactive message template from DB
                 try {
                   await sendInitialButtonDM(targetRecipient, config.initialMessage);
@@ -107,13 +104,14 @@ const handleWebhookEvent = async (req, res) => {
                   console.error('[Webhook] Initial DM error:', dmErr?.response?.data || dmErr.message);
                 }
 
+                // Explicitly set isFollowing: false for new comment session to force Step 2
                 await CommentEvent.create({
                   instagramUserId: fromUser.id,
                   username: fromUser.username || fromUser.id,
                   commentText: commentVal.text || '',
                   mediaId,
-                  isFollowing: isFollowing,
-                  status: isFollowing ? 'completed' : 'awaiting_follow'
+                  isFollowing: false,
+                  status: 'awaiting_follow'
                 });
               }
             }
@@ -132,24 +130,35 @@ const handleWebhookEvent = async (req, res) => {
 
             const payload = postbackPayload || quickReplyPayload || messageText;
 
-            // Step 2 Click: "Send me the link"
+            // Step 2 Click: "Send me the link" -> Always check latest session event
             if (payload === 'SEND_LINK_CLICKED' || payload.includes('send me the link')) {
-              const isFollowing = await checkFollowStatus(senderId);
+              const latestEvent = await CommentEvent.findOne({ instagramUserId: senderId }).sort({ createdAt: -1 });
+              const isFollowing = latestEvent ? latestEvent.isFollowing === true : false;
+              
               if (isFollowing) {
                 await sendFinalResourceButtonsDM(senderId, config.finalMessage);
-                await CommentEvent.updateMany({ instagramUserId: senderId }, { isFollowing: true, status: 'completed' });
+                if (latestEvent) {
+                  latestEvent.status = 'completed';
+                  await latestEvent.save();
+                }
               } else {
+                // Send Step 2: "Wait, you're not following us yet? 🍕"
                 await sendNotFollowingButtonsDM(senderId, config.notFollowingMessage);
               }
             }
 
-            // Step 3 Click: "I'm following ✓"
+            // Step 3 Click: "I'm following ✓" -> Only here mark isFollowing = true & deliver final links
             if (payload === 'IM_FOLLOWING_CLICKED' || payload.includes('following')) {
-              console.log(`[Webhook] User ${senderId} clicked "I'm following ✓". Recording follow in DB & delivering final links...`);
-              await CommentEvent.updateMany(
-                { instagramUserId: senderId }, 
-                { isFollowing: true, followedAt: new Date(), status: 'completed' }
-              );
+              console.log(`[Webhook] User ${senderId} clicked "I'm following ✓". Recording follow & delivering final links...`);
+              
+              const latestEvent = await CommentEvent.findOne({ instagramUserId: senderId }).sort({ createdAt: -1 });
+              if (latestEvent) {
+                latestEvent.isFollowing = true;
+                latestEvent.followedAt = new Date();
+                latestEvent.status = 'completed';
+                await latestEvent.save();
+              }
+
               await sendFinalResourceButtonsDM(senderId, config.finalMessage);
             }
           }
