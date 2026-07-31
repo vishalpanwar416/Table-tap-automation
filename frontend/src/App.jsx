@@ -16,7 +16,6 @@ function App() {
         <NavLink to="/activity" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><MessageSquareText size={19}/><span>Activity</span></NavLink>
         <NavLink to="/settings" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><Settings size={19}/><span>Automation setup</span></NavLink>
       </nav>
-      <a className="privacy-link" href="/privacy.html">Privacy policy</a>
     </aside>
     <main className="main-content"><Routes><Route path="/" element={<DashboardView />} /><Route path="/activity" element={<ActivityView />} /><Route path="/settings" element={<SettingsView />} /></Routes></main>
   </div></Router>;
