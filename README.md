@@ -49,6 +49,10 @@ secret, and `META_GRAPH_API_VERSION` set to a supported Graph API version.
 - A comments webhook is matched against the configured keyword or `any` mode.
 - The app sends an initial DM containing a “Send me the link” quick reply and
   records an `awaiting_follow` event.
+- When enabled in Automation setup, the app also posts a configurable public
+  reply to the original comment (for example, “We sent you a DM—please check
+  your messages”). The reply supports `{{username}}` and `{{comment}}`
+  placeholders.
 - If the recipient confirms the follow action, the final resource message is
   sent and the event is marked `completed`.
 - A cron job reviews awaiting events every five minutes, beginning after ten

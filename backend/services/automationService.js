@@ -17,10 +17,22 @@ class AutomationService {
       instagramUserId: user.id,
       username: user.username || user.id,
       commentText: comment.text || '',
+      commentId: comment.id || comment.comment_id,
       mediaId
     });
 
     await this.instagramGateway.sendInitialReply(user.id, config.initialMessage);
+    if (config.commentReplyEnabled && (comment.id || comment.comment_id)) {
+      const reply = (config.commentReplyMessage || '')
+        .replaceAll('{{username}}', user.username || user.id)
+        .replaceAll('{{comment}}', comment.text || '');
+      try {
+        await this.instagramGateway.replyToComment(comment.id || comment.comment_id, reply);
+      } catch (error) {
+        // A public comment reply is helpful but should not prevent the DM flow.
+        console.error('[Instagram] Comment reply failed:', error.message);
+      }
+    }
     event.status = 'dm_sent';
     event.updatedAt = new Date();
     await this.eventRepository.save(event);

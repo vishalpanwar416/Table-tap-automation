@@ -4,6 +4,7 @@ const commentEventSchema = new mongoose.Schema({
   instagramUserId: { type: String, required: true },
   username: { type: String, required: true },
   commentText: { type: String, required: true },
+  commentId: { type: String },
   mediaId: { type: String, required: true },
   isFollowing: { type: Boolean, default: false },
   followedAt: { type: Date },

@@ -9,7 +9,9 @@ const Settings = () => {
     keywords: 'link, table, tap, order, menu',
     initialMessage: "Hey there! 🍽️✨\n\nThanks for reaching out! Table-Tap makes dining out seamless, fast, and interactive.\n\nClick below and I'll send you your exclusive access link in just a sec! 👇",
     notFollowingMessage: "Wait, you're not following us yet? 🍕\n\nWe share exclusive food deals, secret dining spots, and instant restaurant updates. Hit follow below and join the Table-Tap family! 💛",
-    finalMessage: "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://table-tap.in\n🔥 Exclusive Dining Deals: https://table-tap.in"
+    finalMessage: "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://table-tap.in\n🔥 Exclusive Dining Deals: https://table-tap.in",
+    commentReplyEnabled: false,
+    commentReplyMessage: "Hi @{{username}}! We've sent you a DM. Please check your Instagram messages."
   });
 
   const [saving, setSaving] = useState(false);
@@ -28,7 +30,9 @@ const Settings = () => {
           keywords: data.keywords || 'link, table, tap, order, menu',
           initialMessage: data.initialMessage || "Hey there! 🍽️✨\n\nThanks for reaching out! Table-Tap makes dining out seamless, fast, and interactive.\n\nClick below and I'll send you your exclusive access link in just a sec! 👇",
           notFollowingMessage: data.notFollowingMessage || "Wait, you're not following us yet? 🍕\n\nWe share exclusive food deals, secret dining spots, and instant restaurant updates. Hit follow below and join the Table-Tap family! 💛",
-          finalMessage: data.finalMessage || "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://table-tap.in\n🔥 Exclusive Dining Deals: https://table-tap.in"
+          finalMessage: data.finalMessage || "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://table-tap.in\n🔥 Exclusive Dining Deals: https://table-tap.in",
+          commentReplyEnabled: Boolean(data.commentReplyEnabled),
+          commentReplyMessage: data.commentReplyMessage || "Hi @{{username}}! We've sent you a DM. Please check your Instagram messages."
         });
       }
     } catch (err) {
@@ -39,7 +43,7 @@ const Settings = () => {
   };
 
   const handleChange = (e) => {
-    setConfig({ ...config, [e.target.name]: e.target.value });
+    setConfig({ ...config, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
   };
 
   const handleSave = async (e) => {
@@ -132,6 +136,34 @@ const Settings = () => {
             onChange={handleChange}
           />
         </div>
+
+        <div className="form-group message-field">
+          <label className="form-label">
+            <input
+              type="checkbox"
+              name="commentReplyEnabled"
+              checked={config.commentReplyEnabled}
+              onChange={handleChange}
+            />{' '}
+            Reply publicly to eligible comments
+          </label>
+          <small className="form-help">Ask commenters to check their DM after the automation starts.</small>
+        </div>
+
+        {config.commentReplyEnabled && (
+          <div className="form-group message-field">
+            <label className="form-label">Public comment reply</label>
+            <textarea
+              className="form-control"
+              name="commentReplyMessage"
+              rows={3}
+              value={config.commentReplyMessage}
+              onChange={handleChange}
+              placeholder="Hi @{{username}}! We've sent you a DM. Please check your messages."
+            />
+            <small className="form-help">Available placeholders: {'{{username}}'}, {'{{comment}}'}</small>
+          </div>
+        )}
 
         </section>
         <div className="form-actions">

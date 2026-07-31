@@ -72,3 +72,24 @@ test('delivers the resource when a known follower requests the link', async () =
   assert.deepEqual(deliveredTo, ['user-1']);
   assert.equal(event.status, 'completed');
 });
+
+test('sends an optional dynamic public reply for an eligible comment', async () => {
+  const replies = [];
+  const { service, events } = createService({
+    config: { triggerMode: 'any', commentReplyEnabled: true, commentReplyMessage: 'Hi @{{username}}, check your DM.' },
+    gateway: {
+      sendInitialReply: async () => {},
+      replyToComment: async (commentId, text) => replies.push({ commentId, text })
+    }
+  });
+
+  await service.handleComment({
+    id: 'comment-1',
+    from: { id: 'user-1', username: 'alex' },
+    media_id: 'post-1',
+    text: 'Hello'
+  }, { triggerMode: 'any', commentReplyEnabled: true, commentReplyMessage: 'Hi @{{username}}, check your DM.' });
+
+  assert.equal(events.events[0].commentId, 'comment-1');
+  assert.deepEqual(replies, [{ commentId: 'comment-1', text: 'Hi @alex, check your DM.' }]);
+});

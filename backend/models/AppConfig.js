@@ -22,6 +22,14 @@ const appConfigSchema = new mongoose.Schema({
     type: String, 
     default: "Awesome! Welcome aboard! 🚀\nHere is your official Table-Tap link 👇\n\n👉 Visit Table-Tap: https://table-tap.in\n📱 Instant Menu & Ordering: https://table-tap.in\n🔥 Exclusive Dining Deals: https://table-tap.in" 
   },
+  commentReplyEnabled: {
+    type: Boolean,
+    default: false
+  },
+  commentReplyMessage: {
+    type: String,
+    default: "Hi @{{username}}! We've sent you a DM. Please check your Instagram messages."
+  },
   updatedAt: { type: Date, default: Date.now }
 });
 

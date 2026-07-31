@@ -33,6 +33,21 @@ class InstagramGateway {
     return this.sendMessage(recipientId, text);
   }
 
+  async replyToComment(commentId, text) {
+    if (!commentId) return null;
+    if (!this.isConfigured) {
+      this.logger.log(`[MOCK COMMENT REPLY] Comment: ${commentId} Text: "${text}"`);
+      return { id: `mock_comment_reply_${Date.now()}` };
+    }
+
+    const response = await this.httpClient.post(
+      `https://graph.facebook.com/${this.graphApiVersion}/${commentId}/replies`,
+      { message: text },
+      { headers: { Authorization: `Bearer ${this.accessToken}` } }
+    );
+    return response.data;
+  }
+
   async sendMessage(recipientId, text, quickReplies) {
     if (!this.isConfigured) {
       this.logger.log(`[MOCK DM] To: ${recipientId} Text: "${text}"`);

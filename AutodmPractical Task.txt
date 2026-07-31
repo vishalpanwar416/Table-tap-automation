@@ -1,0 +1,59 @@
+Practical Task:  Instagram Comment-to-DM Automation (MERN Stack)
+Objective
+Build a small full-stack (MERN) application that automates the following workflow using the Instagram Graph API:
+A user comments on an Instagram post (e.g. "send me the link" or a specific keyword) → the system detects the trigger → checks if the user already follows the page → if not, sends them a DM asking them to follow, waits, and re-checks → once followed (or if already following), sends them a DM with the requested link/file.
+This mirrors a common Instagram lead-generation / giveaway funnel used by marketing pages.
+
+Reference Flow  User comments on post — e.g. "send me the link" or a keyword.
+	•	Automation detects trigger — keyword match or "any comment" mode.
+	•	Check: Does the user already follow the page? (via Instagram Graph API) 
+	•	No → a. Send DM: "Please follow our page first!" b. Wait & periodically check if they've followed (e.g. poll every 10 minutes) c. Once followed → proceed to step 4
+	•	Yes → proceed directly to step 4
+	•	Send DM with link or file — e.g. "Here's your resource 👇"
+	•	Flow complete
+
+
+Tech Stack Requirements
+Layer
+Requirement
+Frontend
+React (dashboard to configure keywords, view triggered users, logs)
+Backend
+Node.js + Express
+Database
+MongoDB (store users, comment events, follow status, DM logs, configured triggers)
+External API
+Instagram Graph API (Business/Creator account, via a connected Facebook Page)
+Hosting/Webhooks
+Must expose a public webhook endpoint (ngrok or similar acceptable for local dev)
+
+Functional Requirements
+1. Instagram App & Webhook Setup
+	•	Create a Meta App, add Instagram Graph API + Webhooks products.
+	•	Subscribe to the comments webhook field on a connected Instagram Business Account (linked to a Facebook Page).
+	•	Implement webhook verification endpoint (GET challenge/response) and event receiver (POST).
+	•	Handle webhook payload validation (X-Hub-Signature-256).
+2. Comment Trigger Detection
+	•	On receiving a comment webhook event, extract: commenter's IGSID (Instagram-scoped user ID), comment text, post/media ID.
+	•	Support two trigger modes (configurable from the React dashboard): 
+	•	Keyword match — trigger only if comment contains a configured keyword (case-insensitive).
+	•	Any comment — trigger on every comment on a specific post.
+	•	Store the event in MongoDB (CommentEvent collection) with a status field (pending, dm_sent, awaiting_follow, completed).
+3. Follow-Status Check
+	•	Use the Instagram Graph API to determine whether the commenting user follows the page. 
+	•	Note: Instagram Graph API does not expose a direct "does user X follow me" endpoint for arbitrary users. Candidate should research and implement the closest supported approach (e.g. checking via the Conversations/Messaging API context, is_verified_user, or documenting the API limitation and proposing a workaround such as asking the user to confirm, or using available fields from the messaging webhook). This is intentionally an open problem — evaluate the candidate's research and problem-solving approach here, not just code output.
+4. Automated DM Sending
+	•	Use the Instagram Send API (/me/messages via Graph API) to send: 
+	•	A "please follow us" DM if not following.
+	•	The final resource/link DM once eligible.
+	•	Respect Instagram's 24-hour messaging window and message tag policies — candidate should note these constraints in their README.
+	•	Log every sent DM (recipient, message content, timestamp, status/response from API) to MongoDB.
+5. Polling / Delay & Re-check Logic
+	•	After sending the "please follow" DM, implement a delayed re-check (e.g. using node-cron, agenda, bull, or a simple setTimeout/queue) that re-verifies follow status after ~10 minutes.
+	•	If followed → send the resource DM and mark flow complete.
+	•	If not yet followed → reschedule another check (define a reasonable max retry count/timeout, e.g. stop after 24 hours and mark abandoned).
+6. Admin Dashboard (React)
+	•	Configure trigger keywords and target post(s).
+	•	Configure the "please follow" DM text and the final "resource" DM text/link.
+	•	View a live table/log of: commenter, comment text, current flow status, DMs sent, timestamps.
+	•	Manual "resend" or "mark as followed" override button (useful given API limitations in step 3).
