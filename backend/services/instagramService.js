@@ -40,12 +40,17 @@ class InstagramGateway {
       return { id: `mock_comment_reply_${Date.now()}` };
     }
 
-    const response = await this.httpClient.post(
-      `https://graph.facebook.com/${this.graphApiVersion}/${commentId}/replies`,
-      { message: text },
-      { headers: { Authorization: `Bearer ${this.accessToken}` } }
-    );
-    return response.data;
+    try {
+      const response = await this.httpClient.post(
+        `https://graph.facebook.com/${this.graphApiVersion}/${commentId}/replies`,
+        { message: text },
+        { headers: { Authorization: `Bearer ${this.accessToken}` } }
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error('[Instagram] Public comment reply rejected:', error?.response?.data || error.message);
+      throw error;
+    }
   }
 
   async sendMessage(recipientId, text, quickReplies) {

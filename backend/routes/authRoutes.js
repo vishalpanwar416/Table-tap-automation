@@ -14,7 +14,9 @@ const graphUrl = (path) => `https://graph.facebook.com/${GRAPH_API_VERSION}/${pa
 
 router.get('/login', (req, res) => {
   const redirectUri = `${NGROK_URL}/api/auth/callback`;
-  const scope = 'instagram_manage_messages,instagram_manage_comments,pages_show_list,pages_manage_metadata';
+  // Comment replies under Facebook Login require the Page engagement and
+  // Instagram basic permissions in addition to messaging/comment management.
+  const scope = 'instagram_basic,instagram_manage_messages,instagram_manage_comments,pages_show_list,pages_manage_metadata,pages_read_engagement';
   const authUrl = `https://www.facebook.com/${GRAPH_API_VERSION}/dialog/oauth?client_id=${APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&response_type=code`;
   
   console.log(`[OAuth] Redirecting to Facebook login: ${authUrl}`);
