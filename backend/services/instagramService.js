@@ -1,9 +1,10 @@
 const axios = require('axios');
 
 class InstagramGateway {
-  constructor({ accessToken, accountId, httpClient = axios, logger = console }) {
+  constructor({ accessToken, accountId, graphApiVersion = process.env.META_GRAPH_API_VERSION || 'v23.0', httpClient = axios, logger = console }) {
     this.accessToken = accessToken;
     this.accountId = accountId;
+    this.graphApiVersion = graphApiVersion;
     this.httpClient = httpClient;
     this.logger = logger;
   }
@@ -42,7 +43,7 @@ class InstagramGateway {
     if (quickReplies) message.quick_replies = quickReplies;
 
     try {
-      const response = await this.httpClient.post('https://graph.facebook.com/v20.0/me/messages', {
+      const response = await this.httpClient.post(`https://graph.facebook.com/${this.graphApiVersion}/me/messages`, {
         recipient: { id: recipientId },
         message
       }, { headers: { Authorization: `Bearer ${this.accessToken}` } });
@@ -55,20 +56,11 @@ class InstagramGateway {
   }
 
   async isFollowing(recipientId, username) {
-    if (!this.isConfigured) return false;
-
-    try {
-      const response = await this.httpClient.get(
-        `https://graph.facebook.com/v20.0/${this.accountId}/followers`,
-        { headers: { Authorization: `Bearer ${this.accessToken}` } }
-      );
-      return (response.data?.data || []).some((follower) => (
-        follower.id === String(recipientId) || (username && follower.username === username)
-      ));
-    } catch (error) {
-      this.logger.warn('[Instagram] Could not verify follower status:', error?.response?.data?.error?.message || error.message);
-      return false;
-    }
+    // Instagram does not expose a supported general-purpose `/followers`
+    // endpoint for checking whether an arbitrary user follows the account.
+    // The reliable path is the explicit “I'm following” quick reply handled
+    // by AutomationService; the dashboard also provides a manual override.
+    return false;
   }
 }
 

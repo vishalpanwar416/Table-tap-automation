@@ -51,8 +51,10 @@ secret, and `META_GRAPH_API_VERSION` set to a supported Graph API version.
   records an `awaiting_follow` event.
 - If the recipient confirms the follow action, the final resource message is
   sent and the event is marked `completed`.
-- A cron job re-checks awaiting events every five minutes, beginning after ten
-  minutes and stopping after 24 hours.
+- A cron job reviews awaiting events every five minutes, beginning after ten
+  minutes and stopping after 24 hours. Since Instagram does not expose a
+  supported arbitrary-user follower lookup, completion happens through the
+  explicit “I'm following” quick reply or the dashboard override.
 - The dashboard refreshes event data every three seconds; an administrator can
   also set an event to `completed` through `PUT /api/admin/events/:id`.
 
