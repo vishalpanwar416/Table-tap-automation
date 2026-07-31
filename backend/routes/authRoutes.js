@@ -38,15 +38,17 @@ router.get('/callback', async (req, res) => {
   try {
     const redirectUri = `${NGROK_URL}/api/auth/callback`;
 
-    const tokenRes = await axios.post(graphUrl('oauth/access_token'),
-      new URLSearchParams({
+    // Meta's Facebook Login token exchange is a GET request with query
+    // parameters. Using POST here can return a generic "token exchange
+    // failed" response even when the authorization code is valid.
+    const tokenRes = await axios.get(graphUrl('oauth/access_token'), {
+      params: {
         client_id: APP_ID,
         client_secret: APP_SECRET,
         redirect_uri: redirectUri,
         code
-      }),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-    );
+      }
+    });
 
     const { access_token } = tokenRes.data;
     
