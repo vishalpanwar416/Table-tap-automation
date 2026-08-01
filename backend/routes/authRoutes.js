@@ -124,13 +124,24 @@ router.get('/callback', async (req, res) => {
     process.env.INSTAGRAM_ACCESS_TOKEN = pageAccessToken;
     process.env.INSTAGRAM_ACCOUNT_ID = igAccountId;
     
+    // Local development can persist the discovered credentials in .env.
+    // Hosted environments (for example Render) commonly do not ship with a
+    // writable .env file, so persistence must not turn a successful OAuth
+    // exchange into a false "token exchange failed" response.
     const envPath = path.join(__dirname, '../.env');
-    let envContent = fs.readFileSync(envPath, 'utf8');
-    
-    envContent = envContent.replace(/INSTAGRAM_ACCESS_TOKEN=.*/, `INSTAGRAM_ACCESS_TOKEN=${pageAccessToken}`);
-    envContent = envContent.replace(/INSTAGRAM_ACCOUNT_ID=.*/, `INSTAGRAM_ACCOUNT_ID=${igAccountId}`);
-    fs.writeFileSync(envPath, envContent, 'utf8');
-    console.log(`[OAuth] Successfully updated .env file with new INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_ACCOUNT_ID.`);
+    try {
+      if (fs.existsSync(envPath)) {
+        let envContent = fs.readFileSync(envPath, 'utf8');
+        envContent = envContent.replace(/INSTAGRAM_ACCESS_TOKEN=.*/, `INSTAGRAM_ACCESS_TOKEN=${pageAccessToken}`);
+        envContent = envContent.replace(/INSTAGRAM_ACCOUNT_ID=.*/, `INSTAGRAM_ACCOUNT_ID=${igAccountId}`);
+        fs.writeFileSync(envPath, envContent, 'utf8');
+        console.log('[OAuth] Updated local .env with the discovered Instagram credentials.');
+      } else {
+        console.warn('[OAuth] No .env file found; credentials remain in process memory. Configure them in hosted environment variables for persistence.');
+      }
+    } catch (envError) {
+      console.warn('[OAuth] Could not persist credentials to .env:', envError.message);
+    }
 
     res.send(`
       <!DOCTYPE html>
@@ -159,8 +170,8 @@ router.get('/callback', async (req, res) => {
     `);
 
   } catch (err) {
-    console.error('[OAuth] Token exchange failed:', err?.response?.data || err.message);
-    res.send(`<h2>❌ Token exchange failed. Check server logs.</h2>`);
+    console.error('[OAuth] Authorization callback failed:', err?.response?.data || err.message);
+    res.send(`<h2>❌ Authorization failed. Check server logs.</h2>`);
   }
 });
 
